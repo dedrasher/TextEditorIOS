@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-
 struct ContentView: View {
     @State private var isEditing = false
     @State private var searchText = ""
@@ -36,8 +35,12 @@ struct ContentView: View {
     func delete(index: IndexSet) {
        index.forEach { (i) in
         FileController.delete(name: recents[i].name)
+           var index: Int
+           index = searchText.isEmpty ? i : Preferences.recents.firstIndex(of: searchRecents[i])!
+                
+           Preferences.recents.remove(at: index)
        }
-        Preferences.recents.remove(atOffsets: index)
+        
         recents = Preferences.recents
         dates = Preferences.getDates()
         Preferences.SaveRecents()

@@ -34,10 +34,9 @@ struct ContentView: View {
     }
     func delete(index: IndexSet) {
        index.forEach { (i) in
-        FileController.delete(name: recents[i].name)
            var index: Int
            index = searchText.isEmpty ? i : Preferences.recents.firstIndex(of: searchRecents[i])!
-                
+                FileController.delete(name: recents[index].name)
            Preferences.recents.remove(at: index)
        }
         

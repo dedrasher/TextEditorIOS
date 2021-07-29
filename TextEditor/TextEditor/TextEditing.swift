@@ -18,6 +18,7 @@ struct TextEditing: View {
     @State private var fileText = ""
     @State private var saveDialogIsOpen = false
     @State var fileName : String
+    @FocusState private var focus: Bool?
     func wordsCount() -> Int {
         let components = fileText.components(separatedBy: .whitespacesAndNewlines)
         let words = components.filter { !$0.isEmpty }
@@ -37,7 +38,7 @@ struct TextEditing: View {
     }
     var body: some View {
         VStack{
-            TextEditor(text: $fileText).textAlert(isPresented: $saveDialogIsOpen,
+            TextEditor(text: $fileText).focused($focus, equals: true).textAlert(isPresented: $saveDialogIsOpen,
                                              TextAlert(title: "Warning",
                                                                                                                               message: "Choose name for file",
                                                                                         keyboardType: .default) { result in
@@ -111,6 +112,11 @@ struct TextEditing: View {
                 }
             }
         }.navigationBarTitle(fileName, displayMode: .inline).onAppear{
+            if isNew {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {  
+                self.focus = true
+            }
+            }
         let text = FileController.read(fromDocumentsWithFileName: fileName)
             fileText = text
             sharingText = text

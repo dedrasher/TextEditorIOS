@@ -6,7 +6,7 @@
 //
 
 import Foundation
-struct TextFile: Hashable {
+struct TextFile: Hashable, Codable{
     static func == (lhs: TextFile, rhs: TextFile) -> Bool {
         return lhs.name == rhs.name && lhs.date == rhs.date
     }

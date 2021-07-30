@@ -8,34 +8,26 @@
 import Foundation
 class Preferences {
     public static var recents : [TextFile] = []
-    static var recentsDateKey = "recentsDate"
-    static var recentsNamesKey = "recentsNames"
+    static var recentsKey = "RECENTS_VALUE"
     public static func LoadRecents() {
         var recents: [TextFile] = []
-        let standards = UserDefaults.standard
-        let names = standards.stringArray(forKey: recentsNamesKey) ?? []
-        let dates = standards.stringArray(forKey: recentsDateKey) ?? []
-        if dates.count > 0 {
-        for i in 0..<dates.count {
-            let name = names[i]
-            if(FileController.Exists(fileName: name)) {
-                recents.append(TextFile(name: name, date: dates[i]))
-            }
+        let recentsSource = UserDefaults.standard.array(forKey: recentsKey) ?? []
+        if recentsSource.count > 0 {
+        for i in 0..<recentsSource.count {
+            let file = try! JSONDecoder().decode(TextFile.self, from: recentsSource[i] as! Data)
+            if(FileController.Exists(fileName: file.name)) {
+                recents.append(file)
         }
-            self.recents = recents
         }
-        
+    }
+        self.recents = recents
     }
     public static func SaveRecents() {
-        var names = [String]()
-               var dates = [String]()
+        var recentsSource: [Data] = []
         for recent in recents {
-            names.append(recent.name)
-            dates.append(recent.date)
+            recentsSource.append(try! JSONEncoder().encode(recent))
                }
-               let defaults = UserDefaults.standard
-               defaults.set(names, forKey: recentsNamesKey)
-               defaults.set(dates, forKey: recentsDateKey)
+        UserDefaults.standard.set(recentsSource, forKey: recentsKey)
     }
     public static func getDates() -> [String] {
         var uploadTimes: [String] = []

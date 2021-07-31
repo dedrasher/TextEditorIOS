@@ -113,7 +113,7 @@ struct TextEditing: View {
             }
         }.navigationBarTitle(fileName, displayMode: .inline).onAppear{
             if isNew {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {  
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {  
                 self.focus = true
             }
             }

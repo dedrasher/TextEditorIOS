@@ -64,7 +64,7 @@ struct TextEditing: View {
                                                                                                                             } else {
                                                                                                                                        let oldName = fileName
                                                                                                                                        fileName = fileNameToSave
-                                                                                                                                   isNew = false
+                                                                                                                           
                                                                                                                                    setRecents(save: false)
                                                                                                                                 FileController.rename(oldName: oldName, newName: fileName,fileText: fileText)
                                                                                                                                    }
@@ -113,7 +113,7 @@ struct TextEditing: View {
             }
         }.navigationBarTitle(fileName, displayMode: .inline).onAppear{
             if isNew {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {  
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.51) {  
                 self.focus = true
             }
             }

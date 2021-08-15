@@ -6,7 +6,28 @@
 //
 
 import SwiftUI
+extension StringProtocol {
+    subscript(offset: Int) -> Character {
+        self[index(startIndex, offsetBy: offset)]
+    }
+}
+extension String {
+     func setLength(length: Int) -> String{
+        if length > self.count - 1  {
+            return self
+        }
+        var result = ""
+            for  i in 0..<length{
+                result += String(self[i])
+            }
+     result+="..."
+       return result
+    }
+}
 struct ContentView: View {
+    @State private var isRequestDelete = false
+    @State private var index = IndexSet()
+    @State private var name = ""
     @State private var isEditing = false
     @State private var searchText = ""
     @State private var dates : [String] = []
@@ -31,6 +52,16 @@ struct ContentView: View {
             }
             return dates
         }
+    }
+ 
+    func requestDelete(index: IndexSet) {
+        self.index = index
+        var recentIndex = 0
+        index.forEach { (i) in
+           recentIndex = i
+        }
+        self.name = recents[recentIndex].name
+        isRequestDelete = true
     }
     func delete(index: IndexSet) {
        index.forEach { (i) in
@@ -59,14 +90,24 @@ struct ContentView: View {
                                 ForEach(searchRecents, id: \.self) {
                                     recent in
                                     if(recent.date == section) {
-                                        NavigationLink(recent.name, destination: TextEditing(textFile: recent, isNew: false, fileName: recent.name))
+                                        NavigationLink(recent.name.setLength(length: 30), destination: TextEditing(textFile: recent, isNew: false, fileName: recent.name))
                                     }
-                                }.onDelete(perform: delete)
+                                }.onDelete(perform: requestDelete)
                             }
                         }
                     }.searchable(text: $searchText) .navigationBarItems(trailing: EditButton())
                 }
                 
+            }.alert(isPresented: $isRequestDelete) {
+                Alert(
+                    title: Text("Warning"),
+                    message: Text("Do you really wanna delete \"" + name + "\"?"),
+                    primaryButton: .cancel(),
+                    secondaryButton: .destructive(Text("Delete"))
+                    {
+                        delete(index: index)
+                    }
+                )
             }.onAppear{
                 if(recents.count == 0) {
                Preferences.LoadRecents()

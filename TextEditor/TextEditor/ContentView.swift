@@ -12,7 +12,7 @@ extension StringProtocol {
     }
 }
 extension String {
-     func setLength(length: Int) -> String{
+     func cut(length: Int) -> String{
         if length > self.count - 1  {
             return self
         }
@@ -20,7 +20,6 @@ extension String {
             for  i in 0..<length{
                 result += String(self[i])
             }
-     result+="..."
        return result
     }
 }
@@ -90,7 +89,7 @@ struct ContentView: View {
                                 ForEach(searchRecents, id: \.self) {
                                     recent in
                                     if(recent.date == section) {
-                                        NavigationLink(recent.name.setLength(length: 30), destination: TextEditing(textFile: recent, isNew: false, fileName: recent.name))
+                                        NavigationLink(recent.name.cut(length: 30)+"...", destination: TextEditing(textFile: recent, isNew: false, fileName: recent.name))
                                     }
                                 }.onDelete(perform: requestDelete)
                             }

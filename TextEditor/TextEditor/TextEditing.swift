@@ -64,7 +64,6 @@ struct TextEditing: View {
                                                                                                                             } else {
                                                                                                                                        let oldName = fileName
                                                                                                                                        fileName = fileNameToSave
-                                                                                                                           
                                                                                                                                    setRecents(save: false)
                                                                                                                                 FileController.rename(oldName: oldName, newName: fileName,fileText: fileText)
                                                                                                                                    }
@@ -112,18 +111,17 @@ struct TextEditing: View {
                 }
             }
         }.navigationBarTitle(fileName, displayMode: .inline).onAppear{
+            if(!isNew && !isSaved) {
+                setRecents(save: false)
+            }
             if isNew {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {  
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                 self.focus = true
             }
             }
         let text = FileController.read(fromDocumentsWithFileName: fileName)
             fileText = text
             sharingText = text
-        }.onWillDisappear {
-            if(!isNew && !isSaved) {
-                setRecents(save: false)
-            }
         }.sheet(isPresented: $sharing, content: {
             ActivityViewController(activityItems: [sharingText], applicationActivities: nil)
         }).alert(isPresented: $isExists, content: {

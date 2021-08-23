@@ -28,13 +28,23 @@ extension String {
 }
 struct ContentView: View {
     @State private var isRequestDelete = false
-    @State private var index = IndexSet()
+    @State private var fileToDelete = TextFile.simpleFile
     @State private var name = ""
     @State private var isEditing = false
     @State private var searchText = ""
     @State private var dates : [String] = []
     @State private var recents : [TextFile] = []
     @State private var openView = false
+    @ViewBuilder
+    func displayRecent(recent: TextFile) -> some View {
+        HStack {
+            NavigationLink(recent.name.cut(length: 30, addEllipsis: true), destination: TextEditing(textFile: recent, isNew: false, fileName: recent.name))
+        }.swipeActions( allowsFullSwipe: false, content: {
+            Button("Delete") {
+                requestDelete(file: recent)
+            }.tint(.red)
+        })
+    }
     var searchRecents: [TextFile] {
             if searchText.isEmpty {
                 return recents
@@ -56,25 +66,18 @@ struct ContentView: View {
         }
     }
  
-    func requestDelete(index: IndexSet) {
-        self.index = index
-        var recentIndex = 0
-        index.forEach { (i) in
-           recentIndex = i
-        }
-        self.name = recents[recentIndex].name
+    func requestDelete(file: TextFile) {
+        self.fileToDelete = file
+        self.name = fileToDelete.name
         isRequestDelete = true
     }
-    func delete(index: IndexSet) {
-       index.forEach { (i) in
-           var index: Int
-           index = searchText.isEmpty ? i : Preferences.recents.firstIndex(of: searchRecents[i])!
-           FileController.delete(name: recents[index].name)
-           Preferences.recents.remove(at: index)
-       }
+    func delete() {
+           FileController.delete(name: fileToDelete.name)
+        Preferences.recents.remove(at: Preferences.recents.firstIndex(of: fileToDelete)!)
         recents = Preferences.recents
         dates = Preferences.getDates()
         Preferences.SaveRecents()
+        
     }
     var body: some View {
         NavigationView{
@@ -83,23 +86,29 @@ struct ContentView: View {
                                             
                 }
                 if(recents.count == 0) {
-                    Text("No recents yet!").font(.system(size: 50)).scaledToFit().minimumScaleFactor(0.5)
+                    Text("No recents yet!").font(.system(size: 50)).scaledToFit().padding(.horizontal, 20)
                 }
                 else {
+                    VStack {
+                        if(searchRecents.count == 0) {
+                            Text("No results").font(.system(size: 50)).scaledToFit().padding(.horizontal, 20).foregroundColor(.gray)
+                        } else {
                     List {
                         ForEach(searchDates, id:\.self) {
                             section in Section(header: Text(String(section))){
                                 ForEach(searchRecents, id: \.self) {
                                     recent in
                                     if(recent.date == section) {
-                                        NavigationLink(recent.name.cut(length: 30, addEllipsis: true), destination: TextEditing(textFile: recent, isNew: false, fileName: recent.name))
+                                        displayRecent(recent: recent)
+                                           
                                     }
-                                }.onDelete(perform: requestDelete)
+                                }
                             }
                         }
-                    }.searchable(text: $searchText) .navigationBarItems(trailing: EditButton())
+                    }.animation(.spring(), value: searchRecents)
+                        }
+                }.searchable(text: $searchText)
                 }
-                
             }.alert(isPresented: $isRequestDelete) {
                 Alert(
                     title: Text("Warning"),
@@ -107,7 +116,7 @@ struct ContentView: View {
                     primaryButton: .cancel(),
                     secondaryButton: .destructive(Text("Delete"))
                     {
-                        delete(index: index)
+                        delete()
                     }
                 )
             }.onAppear{

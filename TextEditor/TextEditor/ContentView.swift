@@ -152,7 +152,7 @@ struct ContentView: View {
             }.alert(isPresented: $isRequestDelete) {
                 Alert(
                     title: Text("Warning"),
-                    message: Text(isMultiEditing ? "Do you reallu wanna delete selected files?" :"Do you really wanna delete \"" + name + "\"?"),
+                    message: Text(isMultiEditing ? "Do you really wanna delete selected files?" :"Do you really wanna delete \"" + name + "\"?"),
                     primaryButton: .cancel(),
                     secondaryButton: .destructive(Text("Delete"))
                     {

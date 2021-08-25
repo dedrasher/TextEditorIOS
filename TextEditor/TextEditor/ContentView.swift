@@ -27,6 +27,8 @@ extension String {
     }
 }
 struct ContentView: View {
+    @State private var selectedRecents : [TextFile] = []
+    @State private var isMultiEditing = false
     @Environment(\.scenePhase) private var scenePhase
     @State private var isRequestDelete = false
     @State private var fileToDelete = TextFile.simpleFile
@@ -35,15 +37,33 @@ struct ContentView: View {
     @State private var dates : [String] = []
     @State private var recents : [TextFile] = []
     @State var openView = false
+    func displayName(name: String) -> String {
+        return name.cut(length: isMultiEditing ? 25: 30, addEllipsis: true)
+    }
+    func cleanSelected() {
+        selectedRecents.removeAll()
+    }
     @ViewBuilder
     func displayRecent(recent: TextFile) -> some View {
+        if(isMultiEditing) {
+            let contains = selectedRecents.contains(recent)
+            HStack {
+            Image(systemName: contains ? "checkmark.circle.fill" : "circle")
+                    .foregroundColor(contains ? Color(UIColor.systemBlue) : Color.secondary)
+                Text(displayName(name: recent.name))
+            }.onTapGesture {
+                if(contains) { selectedRecents.remove(at: selectedRecents.firstIndex(of: recent)!) } else { selectedRecents.append(recent)
+                }
+            }
+        } else {
         HStack {
-            NavigationLink(recent.name.cut(length: 30, addEllipsis: true), destination: TextEditing(textFile: recent, isNew: false, fileName: recent.name))
+            NavigationLink(displayName(name: recent.name), destination: TextEditing(textFile: recent, isNew: false, fileName: recent.name))
         }.swipeActions( allowsFullSwipe: false, content: {
             Button("Delete") {
                 requestDelete(file: recent)
             }.tint(.red)
         })
+        }
     }
     var searchRecents: [TextFile] {
             if searchText.isEmpty {
@@ -66,14 +86,27 @@ struct ContentView: View {
         }
     }
  
-    func requestDelete(file: TextFile) {
-        self.fileToDelete = file
+    func requestDelete(file: TextFile? = nil) {
+        if(file != nil) {
+        self.fileToDelete = file!
         self.name = fileToDelete.name
+        }
         isRequestDelete = true
     }
-    func delete() {
-           FileController.delete(name: fileToDelete.name)
-        Preferences.recents.remove(at: Preferences.recents.firstIndex(of: fileToDelete)!)
+    func delete(isMany: Bool) {
+        func remove() {
+            FileController.delete(name: fileToDelete.name)
+         Preferences.recents.remove(at: Preferences.recents.firstIndex(of: fileToDelete)!)
+        }
+        if(isMany) {
+            for recent in selectedRecents {
+                fileToDelete = recent
+               remove()
+            }
+            cleanSelected()
+        } else {
+          remove()
+        }
         recents = Preferences.recents
         dates = Preferences.getDates()
         Preferences.saveRecents()
@@ -99,23 +132,32 @@ struct ContentView: View {
                                     recent in
                                     if(recent.date == section) {
                                         displayRecent(recent: recent)
-                                           
                                     }
                                 }
                             }
                         }
-                    }.animation(.spring(), value: searchRecents)
+                    }.navigationBarItems(leading: Button(isMultiEditing ? "Done" : "Edit") {
+                        isMultiEditing.toggle()
+                        if(!isMultiEditing) {
+                            cleanSelected()
+                        }
+                    }, trailing: HStack {if (isMultiEditing && selectedRecents.count > 0) { Button(action: {
+                        requestDelete()
+                    }){
+                        Image(systemName: "trash")
+                    }}}).animation(.spring(), value: searchRecents)
                         }
                 }.searchable(text: $searchText)
                 }
             }.alert(isPresented: $isRequestDelete) {
                 Alert(
                     title: Text("Warning"),
-                    message: Text("Do you really wanna delete \"" + name + "\"?"),
+                    message: Text(isMultiEditing ? "Do you reallu wanna delete selected files?" :"Do you really wanna delete \"" + name + "\"?"),
                     primaryButton: .cancel(),
                     secondaryButton: .destructive(Text("Delete"))
                     {
-                        delete()
+                       delete(isMany: isMultiEditing)
+                        isMultiEditing = false
                     }
                 )
             }.onAppear{
@@ -128,6 +170,16 @@ struct ContentView: View {
             }.navigationBarTitle("Recents").toolbar{
                 ToolbarItem(placement: .bottomBar) {
                     HStack {
+                        if(isMultiEditing && searchText.isEmpty) {
+                            let allSelected = selectedRecents.count == recents.count
+                            Button(allSelected ? "Deselect all" : "Select all") {
+                                if(allSelected) {
+                                    selectedRecents.removeAll()
+                                } else {
+                               selectedRecents = recents
+                                }
+                            }
+                        }
                         Spacer()
                         if(recents.count > 0) {
                         Text("Files count: " + String(recents.count))

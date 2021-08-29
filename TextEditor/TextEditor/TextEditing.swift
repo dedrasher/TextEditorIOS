@@ -84,7 +84,7 @@ struct TextEditing: View {
         }.sheet(isPresented: $saveDialogIsOpen) {
             SaveDialog(fileName: $fileNameToSave, successCompletion: {
                 if !fileNameToSave.isEmpty {
-                    if !isNew {
+                    if isNew {
                     fileName = fileNameToSave
                 isNew = false
                 setRecents()
@@ -94,6 +94,7 @@ struct TextEditing: View {
                     setRecents(save: false)
                  FileController.rename(oldName: oldName, newName: fileName,fileText: fileText)
                     }
+                    fileNameToSave = ""
                 }
             })
         }.navigationBarTitle(fileName, displayMode: .inline).onAppear{

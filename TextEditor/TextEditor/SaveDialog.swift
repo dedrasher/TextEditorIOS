@@ -10,7 +10,7 @@ struct SaveDialog: View {
     @FocusState var focus: Bool
     @Binding var fileName : String
     @State var successCompletion : (()->Void)?
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.dismiss) var dismiss
     var isNameAvailable: Bool {
         get {
             return !FileController.ExistsInRecents(fileName: fileName)
@@ -35,28 +35,19 @@ struct SaveDialog: View {
             Button(action: {
                 if(isNameAvailable) {
                     successCompletion?()
-                presentationMode.wrappedValue.dismiss()
+               dismiss()
                 }
             },
                    label: {
                 Text("Save with this name").scaledToFit().minimumScaleFactor(0.5).frame(minWidth: 0, maxWidth: .infinity)
                     .padding()
-                    .foregroundColor(.white).background(.blue) .cornerRadius(20).padding(.horizontal, 45).font(.title)
+                    .foregroundColor(.white).background(isNameAvailable ? .blue : .gray) .cornerRadius(20).padding(.horizontal, 45).font(.title).padding(.vertical,10)
             })
-            Button(action: {
-                presentationMode.wrappedValue.dismiss()
-            },
-                   label: {
-                Text("Cancel").frame(minWidth: 0, maxWidth: .infinity)
-                    .padding()
-                    .foregroundColor(.white).background(.gray) .cornerRadius(20).padding(.horizontal, 45).font(.title)
-            })
+          
         }.navigationBarTitle(Text("Set file name"), displayMode: .inline).navigationBarItems(trailing:
-            Button(action: {
-            presentationMode.wrappedValue.dismiss()              }) {
-                                Image(systemName: "multiply.circle.fill").foregroundColor(.gray).scaleEffect(0.85)
-                                                                                .font(Font.system(.title))
-                                                                                                                        }
+                                                                                                Button("Cancel"){
+            dismiss()
+        }
                                                                                                                     )
         }.onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {

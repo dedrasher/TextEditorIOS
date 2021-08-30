@@ -200,7 +200,7 @@ struct ContentView: View {
                 Preferences.openNewFileEditingView = false
                 openView = true
             }
-        }.navigationViewStyle(StackNavigationViewStyle())
+        }.navigationViewStyle(UIDevice.current.userInterfaceIdiom == .pad ? StackNavigationViewStyle() : DefaultNavigationViewStyle())
         
             }
              

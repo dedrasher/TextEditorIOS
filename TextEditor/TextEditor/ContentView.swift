@@ -6,6 +6,15 @@
 //
 
 import SwiftUI
+extension View{
+   func padOnlyStackNavigationView() ->some View{
+       if UIDevice.current.userInterfaceIdiom == .pad{
+           return AnyView(self.navigationViewStyle(StackNavigationViewStyle()))
+       }else{
+           return AnyView(self)
+       }
+   }
+}
 extension StringProtocol {
     subscript(offset: Int) -> Character {
         self[index(startIndex, offsetBy: offset)]
@@ -200,7 +209,7 @@ struct ContentView: View {
                 Preferences.openNewFileEditingView = false
                 openView = true
             }
-        }.navigationViewStyle(UIDevice.current.userInterfaceIdiom == .pad ? StackNavigationViewStyle() : DefaultNavigationViewStyle())
+        }.padOnlyStackNavigationView()
         
             }
              

@@ -127,7 +127,16 @@ struct ContentView: View {
                                             
                 }
                 if(recents.count == 0) {
+                    VStack(alignment: .center, spacing: 20) {
                     Text("No recents yet!").font(.system(size: 50)).scaledToFill().padding(.horizontal, 20)
+                    Button(action: {
+                        openView = true
+                    }, label: {
+                        Text("Create new text file").frame(minWidth: 20, maxWidth: 200).padding(.vertical,15).font(.system(.title2)).foregroundColor(.white)
+                    .background(Color.blue)
+                            .cornerRadius(20)
+                    })
+                    }
                 }
                 else {
                     VStack {
